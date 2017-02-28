@@ -1,8 +1,27 @@
 #include "d3d9.h"
 #include <fstream>
 #include <D3dx9core.h>
+#include <iostream>
+#include <fstream>
+#include "address_helpers.h"
 
 HMODULE g_module = NULL;
+LPDIRECT3DTEXTURE9 g_Texture = NULL;
+HWND g_handle;
+ID3DXFont *m_font;
+std::ofstream myfile;
+const char *text = "TEST2";
+LPD3DXSPRITE sprite;
+
+struct sVertex
+{
+	float x, y, z;
+	float u, v;
+	D3DCOLOR color;
+	float nx, ny, nz;
+};
+
+
 IDirect3D9 *WINAPI Direct3DCreate9(UINT SDKVersion)
 {
 	return new f_iD3D9(orig_Direct3DCreate9(SDKVersion));
@@ -16,24 +35,22 @@ void LoadOriginalDll(){
 }
 
 bool WINAPI DllMain(HMODULE hModule, DWORD fdwReason, LPVOID lpReserved) {
-	std::ofstream myfile;
-	myfile.open("C:/Users/saumyamukul/Desktop/Test.txt");
-	myfile << "Writing this to a file.\n";
-	
 
 	switch (fdwReason)
 	{
 	case DLL_PROCESS_ATTACH:
-		if (!g_module)LoadOriginalDll();
-		orig_Direct3DCreate9 = (D3DC9)GetProcAddress(g_module, "Direct3DCreate9");
-		break;
+	{
+							   if (!g_module)LoadOriginalDll();
 
+							   myfile = std::ofstream("C:/Users/saumyamukul/Desktop/Output1.txt",std::ios_base::out);
+							   myfile << "Writing this to a file.\n";
+							   orig_Direct3DCreate9 = (D3DC9)GetProcAddress(g_module, "Direct3DCreate9");
+							   break;
+	}
 	case DLL_PROCESS_DETACH:
 		FreeLibrary(g_module);
 		break;
 	}
-	myfile << "After.\n";
-	myfile.close();
 	return true;
 }
 
@@ -76,7 +93,7 @@ DWORD WINAPI D3DPERF_GetStatus()
 {
 	if (!g_module) LoadOriginalDll(); // looking for the "right d3d9.dll"
 
-	typedef DWORD (WINAPI* D3DPERF_GS)();
+	typedef DWORD(WINAPI* D3DPERF_GS)();
 	D3DPERF_GS D3DPERF_GetStatus_fn = (D3DPERF_GS)GetProcAddress(g_module, "D3DPERF_GetStatus");
 
 	return D3DPERF_GetStatus_fn();
@@ -91,34 +108,22 @@ HRESULT f_iD3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
 
 	*temp = new f_IDirect3DDevice9(*ppReturnedDeviceInterface, &ppReturnedDeviceInterface);
 	*ppReturnedDeviceInterface = *temp;
-
 	HRESULT hr = f_pD3D->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
-
+	g_handle = hFocusWindow;
 	// NOTE: initialize your custom D3D components here.
-
-	return hr;
-}
-
-HRESULT f_IDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParameters)
-{
-	// NOTE: call onLostDevice for custom D3D components here.
-
-	HRESULT hr = f_pD3DDevice->Reset(pPresentationParameters);
-
-	// NOTE: call onResetDevice for custom D3D components here.
-
-	return hr;
-}
-
-HRESULT f_IDirect3DDevice9::EndScene()
-{
-
-	// NOTE: draw your custom D3D components here.
-
-	ID3DXFont *m_font;
+	DWORD base_address	= GetProcessBaseAddress();
+	myfile << base_address;
+	myfile.close();
+	std::string file_path = "C:/Users/saumyamukul/Documents/Visual Studio 2013/Projects/DotaTrueStrike/Images/Heroes/Alchemist.png";
+	if (!SUCCEEDED(D3DXCreateTextureFromFileEx(*ppReturnedDeviceInterface, file_path.c_str(), 40, 40, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &g_Texture))){
+		myfile << "Texture loading failed.\n";
+	}
+	if (!SUCCEEDED(D3DXCreateSprite(*ppReturnedDeviceInterface, &sprite))){
+		myfile << "Create sprite failed.\n";
+	}
 
 	//A pre-formatted string showing the current frames per second
-	HRESULT result = D3DXCreateFont(f_pD3DDevice,     //D3D Device
+	HRESULT result = D3DXCreateFont(*ppReturnedDeviceInterface,     //D3D Device
 
 		22,               //Font height
 
@@ -141,7 +146,25 @@ HRESULT f_IDirect3DDevice9::EndScene()
 		"Arial",          //pFacename,
 
 		&m_font);         //ppFont
-	const char *text = "TEST";
+	return hr;
+}
+
+HRESULT f_IDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParameters)
+{
+	// NOTE: call onLostDevice for custom D3D components here.
+
+	HRESULT hr = f_pD3DDevice->Reset(pPresentationParameters);
+
+	// NOTE: call onResetDevice for custom D3D components here.
+
+	return hr;
+}
+
+HRESULT f_IDirect3DDevice9::EndScene()
+{
+
+	//// NOTE: draw your custom D3D components here.
+
 	RECT textRect;
 	SetRect(&textRect, 50, 50, 50, 50);
 	int font_height = m_font->DrawText(NULL,        //pSprite
@@ -155,6 +178,49 @@ HRESULT f_IDirect3DDevice9::EndScene()
 		DT_LEFT | DT_NOCLIP,//Format,
 
 		0xFFFFFFFF); //Color
+
+	D3DXVECTOR3 position(100, 200, 0);
+	D3DCOLOR color = D3DCOLOR_ARGB(255, 255, 255, 255);
+	sprite->Begin(D3DXSPRITE_ALPHABLEND);
+	sprite->Draw(g_Texture, NULL, NULL, &position, color);
+	sprite->End();
+	////Draw sprites
+	//f_pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+	//f_pD3DDevice->CreateVertexDeclaration(s_vertexElements, &s_vertexDeclaration);
+	//f_pD3DDevice->SetVertexDeclaration(s_vertexDeclaration);
+	//// Enable Alpha Blending
+	//f_pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	//f_pD3DDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	//f_pD3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	//// Turn off depth comparision and depth writing
+
+	//f_pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+	//f_pD3DDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+
+	//f_pD3DDevice->SetVertexShader(g_vertexShader);
+	//f_pD3DDevice->SetPixelShader(g_pixelShader);
+
+
+	//f_pD3DDevice->SetTexture(0, g_Texture);
+
+	//// Bind a specific vertex buffer to the device as a data source
+	//{
+	//	// There can be multiple streams of data feeding the display adaptor at the same time
+	//	const unsigned int streamIndex = 0;
+	//	// It's possible to start streaming data in the middle of a vertex buffer
+	//	const unsigned int bufferOffset = 0;
+	//	// The "stride" defines how large a single vertex is in the stream of data
+	//	const unsigned int bufferStride = sizeof(sVertex);
+	//	HRESULT result = f_pD3DDevice->SetStreamSource(streamIndex,g_vertexBuffer, bufferOffset, bufferStride);
+	//	if (FAILED(result)){
+	//		MessageBox(g_handle, "Draw fail", "No Vertex Buffer", MB_OK | MB_ICONERROR);
+	//	}
+	//}
+	//const D3DPRIMITIVETYPE primitiveType = D3DPT_TRIANGLESTRIP;
+	//const unsigned int indexOfFirstVertexToRender = 0;
+	//const unsigned int primitiveCountToRender = 2;
+
+	//f_pD3DDevice->DrawPrimitive(primitiveType, indexOfFirstVertexToRender, primitiveCountToRender);
 	return f_pD3DDevice->EndScene();
 }
 

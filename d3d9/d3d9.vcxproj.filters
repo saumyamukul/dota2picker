@@ -18,6 +18,9 @@
     <ClInclude Include="d3d9.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="address_helpers.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3d9.cpp">
