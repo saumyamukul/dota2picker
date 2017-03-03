@@ -5,15 +5,22 @@ extern std::ofstream myfile;
 HMODULE GetModule(PVOID hProcess);
 
 DWORD GetProcessBaseAddress(){
-	HWND WindowHandle = FindWindow(nullptr, "dota2.exe");
-	myfile << "Win handle" << WindowHandle;
+	HWND WindowHandle = ::FindWindowEx(0, 0, 0, "Dota 2");
+	std::cout << "Win handle" << (void*)WindowHandle;
 	DWORD PID;
 	GetWindowThreadProcessId(WindowHandle, &PID);
-	myfile << "PID" << PID;
+	std::cout << "PID" << PID;
 	PVOID hProcess = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, 0, PID);
 	HMODULE Module = GetModule(hProcess);
-	myfile << "Module" << Module;
+	std::cout << "Module" << Module;
+	int value = 0;
+	auto return_value = ReadProcessMemory(hProcess, (void*)Module, &value, sizeof(value), 0);
+	auto error = GetLastError();
 	return (DWORD)Module;
+}
+
+HWND GetWindow(){
+	return ::FindWindowEx(0, 0, 0, "Dota 2");
 }
 
 HMODULE GetModule(PVOID hProcess)
@@ -35,7 +42,6 @@ HMODULE GetModule(PVOID hProcess)
 				std::string strModContain = "dota2.exe";
 				if (strModName.find(strModContain) != std::string::npos)
 				{
-					CloseHandle(pHandle);
 					return hMods[i];
 				}
 			}

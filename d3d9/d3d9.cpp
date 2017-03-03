@@ -6,13 +6,17 @@
 #include "address_helpers.h"
 
 HMODULE g_module = NULL;
-LPDIRECT3DTEXTURE9 g_Texture = NULL;
+LPDIRECT3DTEXTURE9 g_Texture[10];
 HWND g_handle;
 ID3DXFont *m_font;
 std::ofstream myfile;
 const char *text = "TEST2";
-LPD3DXSPRITE sprite;
-
+LPD3DXSPRITE sprite[10];
+float image_width = 100.0f;
+float image_height = 100.0f;
+float side_margin = 25.0f;
+float window_width;
+std::string heroes[10] = { "Alchemist", "Axe", "Beastmaster", "Bristleback", "Centaur_Warrunner", "Chaos_Knight", "Clockwerk", "Doom","Dragon_Knight","Drow_Ranger" };
 struct sVertex
 {
 	float x, y, z;
@@ -111,17 +115,24 @@ HRESULT f_iD3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
 	HRESULT hr = f_pD3D->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
 	g_handle = hFocusWindow;
 	// NOTE: initialize your custom D3D components here.
-	DWORD base_address	= GetProcessBaseAddress();
+	DWORD base_address = GetProcessBaseAddress();
 	myfile << base_address;
-	myfile.close();
-	std::string file_path = "C:/Users/saumyamukul/Documents/Visual Studio 2013/Projects/DotaTrueStrike/Images/Heroes/Alchemist.png";
-	if (!SUCCEEDED(D3DXCreateTextureFromFileEx(*ppReturnedDeviceInterface, file_path.c_str(), 40, 40, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &g_Texture))){
-		myfile << "Texture loading failed.\n";
-	}
-	if (!SUCCEEDED(D3DXCreateSprite(*ppReturnedDeviceInterface, &sprite))){
-		myfile << "Create sprite failed.\n";
-	}
 
+	for (int i = 0; i < 10; ++i){
+		std::string file_path = "C:/Users/saumyamukul/Documents/Visual Studio 2013/Projects/DotaTrueStrike/Images/Heroes/"+heroes[i]+".png";
+		if (!SUCCEEDED(D3DXCreateTextureFromFileEx(*ppReturnedDeviceInterface, file_path.c_str(), image_width, image_height, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &g_Texture[i]))){
+			myfile << "Texture loading failed.\n";
+		}
+		if (!SUCCEEDED(D3DXCreateSprite(*ppReturnedDeviceInterface, &sprite[i]))){
+			myfile << "Create sprite failed.\n";
+		}
+	}
+	myfile.close();
+
+	auto window_handle = GetWindow();
+	RECT window_rect;
+	GetWindowRect(window_handle, &window_rect);
+	window_width = window_rect.right - window_rect.left;
 	//A pre-formatted string showing the current frames per second
 	HRESULT result = D3DXCreateFont(*ppReturnedDeviceInterface,     //D3D Device
 
@@ -179,11 +190,22 @@ HRESULT f_IDirect3DDevice9::EndScene()
 
 		0xFFFFFFFF); //Color
 
-	D3DXVECTOR3 position(100, 200, 0);
+	D3DXVECTOR3 base_position(side_margin, 200 - image_height*0.5f, 0);
+	float vertical_spacing = 50;
 	D3DCOLOR color = D3DCOLOR_ARGB(255, 255, 255, 255);
-	sprite->Begin(D3DXSPRITE_ALPHABLEND);
-	sprite->Draw(g_Texture, NULL, NULL, &position, color);
-	sprite->End();
+	for (int i = 0; i < 5; ++i){
+		D3DXVECTOR3 position = D3DXVECTOR3(base_position.x, base_position.y + i*(vertical_spacing+image_height), base_position.z);
+		sprite[i]->Begin(D3DXSPRITE_ALPHABLEND);
+		sprite[i]->Draw(g_Texture[i], NULL, NULL, &position, color);
+		sprite[i]->End();
+	}
+	base_position = D3DXVECTOR3(window_width - side_margin - image_width, 200 - image_height, 0);
+	for (int i = 5; i < 10; ++i){
+		D3DXVECTOR3 position = D3DXVECTOR3(base_position.x, base_position.y + (i-5)*(vertical_spacing + image_height), base_position.z);
+		sprite[i]->Begin(D3DXSPRITE_ALPHABLEND);
+		sprite[i]->Draw(g_Texture[i], NULL, NULL, &position, color);
+		sprite[i]->End();
+	}
 	////Draw sprites
 	//f_pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	//f_pD3DDevice->CreateVertexDeclaration(s_vertexElements, &s_vertexDeclaration);
