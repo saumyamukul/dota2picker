@@ -1,6 +1,7 @@
 #pragma once
 #include "Psapi.h"
 #include <vector>
+#include <iostream>
 UINT_PTR base_offset = 0x2500D40;
 #define OFFSET_1  0x418
 #define OFFSET_2  0x14
