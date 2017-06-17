@@ -4,19 +4,42 @@
 #include <iostream>
 #include <fstream>
 #include "address_helpers.h"
-
+#include "heroes.h"
+#include <string>
 HMODULE g_module = NULL;
-LPDIRECT3DTEXTURE9 g_Texture[10];
+std::map<int, LPDIRECT3DTEXTURE9> textures;
+std::map<int, LPDIRECT3DTEXTURE9>::iterator map_iter;
+LPDIRECT3DTEXTURE9 question_tex;
+LPDIRECT3DTEXTURE9 dock_tex;
+LPDIRECT3DTEXTURE9 empty_texture;
+LPDIRECT3DTEXTURE9 found_texture;
+LPDIRECT3DTEXTURE9 right_arrow;
+LPDIRECT3DTEXTURE9 left_arrow;
+bool mouse_down = false;
 HWND g_handle;
 ID3DXFont *m_font;
 std::ofstream myfile;
+std::string box_id;
 const char *text = "TEST2";
+const char* click = "Detected Click";
+const char* not_click = "Not Click";
+const char* inside = "Inside";
+LPD3DXSPRITE frames[10];
 LPD3DXSPRITE sprite[10];
-float image_width = 100.0f;
-float image_height = 100.0f;
-float side_margin = 25.0f;
+LPD3DXSPRITE dockSprite;
+LPD3DXSPRITE displayed_hero_sprite;
+LPD3DXSPRITE left_arrow_sprite;
+LPD3DXSPRITE right_arrow_sprite;
+
+float arrow_width = 16.0f;
+float arrow_height = 16.0f;
+float image_width = 150.0f;
+float image_height = 84.0f;
+float dock_width = 200.0f;
+float dock_height = 1024.0f;
+float side_margin = 0.0f;
 float window_width;
-std::string heroes[10] = { "Alchemist", "Axe", "Beastmaster", "Bristleback", "Centaur_Warrunner", "Chaos_Knight", "Clockwerk", "Doom","Dragon_Knight","Drow_Ranger" };
+float window_height;
 struct sVertex
 {
 	float x, y, z;
@@ -46,7 +69,7 @@ bool WINAPI DllMain(HMODULE hModule, DWORD fdwReason, LPVOID lpReserved) {
 	{
 							   if (!g_module)LoadOriginalDll();
 
-							   myfile = std::ofstream("C:/Users/saumyamukul/Desktop/Output1.txt",std::ios_base::out);
+							   myfile = std::ofstream("C:/Users/saumyamukul/Desktop/Output1.txt", std::ios_base::out);
 							   myfile << "Writing this to a file.\n";
 							   orig_Direct3DCreate9 = (D3DC9)GetProcAddress(g_module, "Direct3DCreate9");
 							   break;
@@ -115,17 +138,66 @@ HRESULT f_iD3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
 	HRESULT hr = f_pD3D->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
 	g_handle = hFocusWindow;
 	// NOTE: initialize your custom D3D components here.
-	DWORD base_address = GetProcessBaseAddress();
-	myfile << base_address;
-
-	for (int i = 0; i < 10; ++i){
-		std::string file_path = "C:/Users/saumyamukul/Documents/Visual Studio 2013/Projects/DotaTrueStrike/Images/Heroes/"+heroes[i]+".png";
-		if (!SUCCEEDED(D3DXCreateTextureFromFileEx(*ppReturnedDeviceInterface, file_path.c_str(), image_width, image_height, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &g_Texture[i]))){
+	for (auto hero : heroes){
+		std::string file_path = "C:/Users/saumyamukul/Documents/Visual Studio 2013/Projects/DotaTrueStrike/Images/Full-Images/" + hero.second + ".png";
+		LPDIRECT3DTEXTURE9 tex;
+		if (!SUCCEEDED(D3DXCreateTextureFromFileEx(*ppReturnedDeviceInterface, file_path.c_str(), image_width, image_height, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &tex))){
 			myfile << "Texture loading failed.\n";
 		}
+		textures.insert({ hero.first, tex });
+	}
+
+	map_iter = textures.begin();
+	// Load Question Mark
+	std::string file_path = "C:/Users/saumyamukul/Documents/Visual Studio 2013/Projects/DotaTrueStrike/Images/Heroes/Background.png";
+	if (!SUCCEEDED(D3DXCreateTextureFromFileEx(*ppReturnedDeviceInterface, file_path.c_str(), image_width, image_height, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &question_tex))){
+		myfile << "Texture loading failed.\n";
+	}
+	// Load Dock Frame
+	file_path = "C:/Users/saumyamukul/Documents/Visual Studio 2013/Projects/DotaTrueStrike/Images/Heroes/DockFrame.png";
+	if (!SUCCEEDED(D3DXCreateTextureFromFileEx(*ppReturnedDeviceInterface, file_path.c_str(), dock_width, dock_height, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &dock_tex))){
+		myfile << "Texture loading failed.\n";
+	}
+
+	// Load Frames
+	file_path = "C:/Users/saumyamukul/Documents/Visual Studio 2013/Projects/DotaTrueStrike/Images/Heroes/FoundFrame.png";
+	if (!SUCCEEDED(D3DXCreateTextureFromFileEx(*ppReturnedDeviceInterface, file_path.c_str(), image_width, image_height, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &found_texture))){
+		myfile << "Texture loading failed.\n";
+	}
+
+	// Load Arrows
+	file_path = "C:/Users/saumyamukul/Documents/Visual Studio 2013/Projects/DotaTrueStrike/Images/LeftArrow.png";
+	if (!SUCCEEDED(D3DXCreateTextureFromFileEx(*ppReturnedDeviceInterface, file_path.c_str(), arrow_width, arrow_height, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &left_arrow))){
+		myfile << "Texture loading failed.\n";
+	}
+
+	file_path = "C:/Users/saumyamukul/Documents/Visual Studio 2013/Projects/DotaTrueStrike/Images/RightArrow.png";
+	if (!SUCCEEDED(D3DXCreateTextureFromFileEx(*ppReturnedDeviceInterface, file_path.c_str(), arrow_width, arrow_height, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &right_arrow))){
+		myfile << "Texture loading failed.\n";
+	}
+
+	for (int i = 0; i < 10; ++i){
 		if (!SUCCEEDED(D3DXCreateSprite(*ppReturnedDeviceInterface, &sprite[i]))){
 			myfile << "Create sprite failed.\n";
 		}
+		if (!SUCCEEDED(D3DXCreateSprite(*ppReturnedDeviceInterface, &frames[i]))){
+			myfile << "Create sprite failed.\n";
+		}
+	}
+	if (!SUCCEEDED(D3DXCreateSprite(*ppReturnedDeviceInterface, &dockSprite))){
+		myfile << "Create sprite failed.\n";
+	}
+
+	if (!SUCCEEDED(D3DXCreateSprite(*ppReturnedDeviceInterface, &displayed_hero_sprite))){
+		myfile << "Create sprite failed.\n";
+	}
+
+	if (!SUCCEEDED(D3DXCreateSprite(*ppReturnedDeviceInterface, &left_arrow_sprite))){
+		myfile << "Create sprite failed.\n";
+	}
+
+	if (!SUCCEEDED(D3DXCreateSprite(*ppReturnedDeviceInterface, &right_arrow_sprite))){
+		myfile << "Create sprite failed.\n";
 	}
 	myfile.close();
 
@@ -133,6 +205,7 @@ HRESULT f_iD3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
 	RECT window_rect;
 	GetWindowRect(window_handle, &window_rect);
 	window_width = window_rect.right - window_rect.left;
+	window_height = window_rect.bottom - window_rect.top;
 	//A pre-formatted string showing the current frames per second
 	HRESULT result = D3DXCreateFont(*ppReturnedDeviceInterface,     //D3D Device
 
@@ -171,16 +244,85 @@ HRESULT f_IDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParameters
 	return hr;
 }
 
+bool InsideRect(RECT rect){
+	POINT cursorPos;
+	GetCursorPos(&cursorPos);
+	if (cursorPos.x >= rect.left && cursorPos.x <= rect.right){
+		if (cursorPos.y >= rect.top && cursorPos.y <= rect.bottom){
+			return true;
+		}
+	}
+	return false;
+}
+
 HRESULT f_IDirect3DDevice9::EndScene()
 {
+	D3DCOLOR color = D3DCOLOR_ARGB(255, 255, 255, 255);
+	D3DXVECTOR3 dockPosition = D3DXVECTOR3(window_width - dock_width, (window_height-dock_height)/2.0f, 0);
 
+	// Draw dock image
+	dockSprite->Begin(D3DXSPRITE_ALPHABLEND);
+	dockSprite->Draw(dock_tex, NULL, NULL, &dockPosition, color);
+	dockSprite->End();
+
+	// Draw picked hero image
+	D3DXVECTOR3 image_position = D3DXVECTOR3(window_width - dock_width + (dock_width - image_width) / 2.0f, (window_height - dock_height) / 2.0f + (dock_height - image_height) / 2.0f, 0);
+	displayed_hero_sprite->Begin(D3DXSPRITE_ALPHABLEND);
+	displayed_hero_sprite->Draw(map_iter->second, NULL, NULL, &image_position, color);
+	displayed_hero_sprite->End();
+
+
+	D3DXVECTOR3 arrow_position = D3DXVECTOR3(window_width - dock_width / 2.0f, (window_height - dock_height) / 2.0f + (dock_height - image_height) / 2.0f + image_height + 20.0f, 0);
+
+	// Draw left arrow
+	D3DXVECTOR3 left_pos = arrow_position + D3DXVECTOR3(-20 - arrow_width/2.0f, 0.0f, 0.0f);
+	left_arrow_sprite->Begin(D3DXSPRITE_ALPHABLEND);
+	left_arrow_sprite->Draw(left_arrow, NULL, NULL, &left_pos, color);
+	left_arrow_sprite->End();
+
+	// Draw right arrow
+	D3DXVECTOR3 right_pos = arrow_position + D3DXVECTOR3(20 - arrow_width/2.0f, 0.0f, 0.0f);
+	right_arrow_sprite->Begin(D3DXSPRITE_ALPHABLEND);
+	right_arrow_sprite->Draw(right_arrow, NULL, NULL, &right_pos, color);
+	right_arrow_sprite->End();
+
+	bool key_up = false; 
+	if ((GetKeyState(VK_LBUTTON) & 0x100) != 0){
+		mouse_down = true;
+	}
+	else{
+		if (mouse_down){
+			RECT left_arrow_rect;
+			SetRect(&left_arrow_rect, left_pos.x, left_pos.y, left_pos.x + arrow_width, left_pos.y + arrow_height);
+			if (InsideRect(left_arrow_rect)){
+				box_id = click;
+				if (map_iter != textures.begin()){
+					map_iter--;
+				}
+			}
+
+			RECT right_arrow_rect;
+			SetRect(&right_arrow_rect, right_pos.x, right_pos.y, right_pos.x + arrow_width, right_pos.y + arrow_height);
+			if (InsideRect(right_arrow_rect)){
+				box_id = click;
+				if (std::next(map_iter) != textures.end()){
+					map_iter++;
+				}
+			}
+		}
+		mouse_down = false;
+		box_id = not_click;
+	}
+		
 	//// NOTE: draw your custom D3D components here.
 
 	RECT textRect;
-	SetRect(&textRect, 50, 50, 50, 50);
+	POINT cursorPos;
+	GetCursorPos(&cursorPos);
+	SetRect(&textRect, cursorPos.x, cursorPos.y, 50, 50);
 	int font_height = m_font->DrawText(NULL,        //pSprite
 
-		text,  //pString
+		box_id.c_str(),  //pString
 
 		-1,          //Count
 
@@ -190,22 +332,50 @@ HRESULT f_IDirect3DDevice9::EndScene()
 
 		0xFFFFFFFF); //Color
 
-	D3DXVECTOR3 base_position(side_margin, 200 - image_height*0.5f, 0);
-	float vertical_spacing = 50;
-	D3DCOLOR color = D3DCOLOR_ARGB(255, 255, 255, 255);
+	/*D3DXVECTOR3 base_position(side_margin, 300, 0);
+	float vertical_spacing =10;
+	auto hero_ids = GetHeroIDs();
+	LPDIRECT3DTEXTURE9 tex;
+	LPDIRECT3DTEXTURE9 frame_tex;
 	for (int i = 0; i < 5; ++i){
-		D3DXVECTOR3 position = D3DXVECTOR3(base_position.x, base_position.y + i*(vertical_spacing+image_height), base_position.z);
+		auto hero_id = hero_ids[i];
+		if (hero_id<=0 || hero_id>112)		{
+			tex = question_tex;
+			frame_tex = empty_texture;
+		}
+		else{
+			tex = textures[hero_id];
+			frame_tex = found_texture;
+		}
+		D3DXVECTOR3 position = D3DXVECTOR3(base_position.x, base_position.y + i*(vertical_spacing + image_height), base_position.z);
 		sprite[i]->Begin(D3DXSPRITE_ALPHABLEND);
-		sprite[i]->Draw(g_Texture[i], NULL, NULL, &position, color);
+		sprite[i]->Draw(tex, NULL, NULL, &position, color);
 		sprite[i]->End();
+
+		frames[i]->Begin(D3DXSPRITE_ALPHABLEND);
+		frames[i]->Draw(frame_tex, NULL, NULL, &position, color);
+		frames[i]->End();
 	}
-	base_position = D3DXVECTOR3(window_width - side_margin - image_width, 200 - image_height, 0);
+	base_position = D3DXVECTOR3(window_width - side_margin - image_width, 300, 0);
 	for (int i = 5; i < 10; ++i){
-		D3DXVECTOR3 position = D3DXVECTOR3(base_position.x, base_position.y + (i-5)*(vertical_spacing + image_height), base_position.z);
+		auto hero_id = hero_ids[i];
+		if (hero_id<=0 || hero_id>112)		{
+			tex = question_tex;
+			frame_tex = empty_texture;
+		}
+		else{
+			tex = textures[hero_id];
+			frame_tex = found_texture;
+		}
+		D3DXVECTOR3 position = D3DXVECTOR3(base_position.x, base_position.y + (i - 5)*(vertical_spacing + image_height), base_position.z);
 		sprite[i]->Begin(D3DXSPRITE_ALPHABLEND);
-		sprite[i]->Draw(g_Texture[i], NULL, NULL, &position, color);
+		sprite[i]->Draw(tex, NULL, NULL, &position, color);
 		sprite[i]->End();
-	}
+
+		frames[i]->Begin(D3DXSPRITE_ALPHABLEND);
+		frames[i]->Draw(frame_tex, NULL, NULL, &position, color);
+		frames[i]->End();
+	}*/
 	////Draw sprites
 	//f_pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	//f_pD3DDevice->CreateVertexDeclaration(s_vertexElements, &s_vertexDeclaration);

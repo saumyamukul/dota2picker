@@ -21,6 +21,9 @@
     <ClInclude Include="address_helpers.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="heroes.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3d9.cpp">

@@ -159,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="address_helpers.h" />
     <ClInclude Include="d3d9.h" />
+    <ClInclude Include="heroes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3d9.cpp" />
