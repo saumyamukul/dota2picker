@@ -15,7 +15,7 @@ int dock_height = 1024;
 
 std::map<std::string, LPDIRECT3DTEXTURE9> TextureLoader::_textures;
 std::vector<SpriteAsset> TextureLoader::_sprites;
-
+std::map<std::string, LPDIRECT3DTEXTURE9>::iterator image_iter;
 bool TextureLoader::load_textures(IDirect3DDevice9** device){
 	std::vector<TextureAsset> assets = {
 		{ "DockFrame", dock_width, dock_height },
@@ -37,7 +37,7 @@ bool TextureLoader::load_textures(IDirect3DDevice9** device){
 	for (auto asset : assets){
 		LPDIRECT3DTEXTURE9 tex;
 		auto file_path = "C:/Users/saumyamukul/Documents/Visual Studio 2013/Projects/DotaDLL/d3d9/Assets/" + asset.name + ".png";
-		if (!SUCCEEDED(D3DXCreateTextureFromFileEx(*device, file_path.c_str(), asset.width, asset.height, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &tex))){
+		if (!SUCCEEDED(D3DXCreateTextureFromFileEx(*device, file_path.c_str(), asset.size.x, asset.size.y, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &tex))){
 			error_message = "Texture loading failed.\n";
 			goto on_error;
 		}
@@ -67,11 +67,31 @@ bool TextureLoader::create_sprites(IDirect3DDevice9** device){
 	D3DXVECTOR3 left_pos = arrow_position + D3DXVECTOR3(-20 - arrow_width / 2.0f, 0.0f, 0.0f);
 	// Draw right arrow
 	D3DXVECTOR3 right_pos = arrow_position + D3DXVECTOR3(20 - arrow_width / 2.0f, 0.0f, 0.0f);
-	std::vector<std::pair<std::string, D3DXVECTOR3>> assets = {
-		{ "DockFrame", dockPosition, },
-		{ "Image", image_position },
-		{ "LeftArrow", left_pos },
-		{ "RightArrow", right_pos }
+	image_iter = _textures.begin();
+	auto image_tex = (image_iter != _textures.end()) ? image_iter->second : nullptr;
+
+	auto left_arrow_func = []{
+		auto textures = TextureLoader::get_textures();
+		if (image_iter != textures.begin()){
+			image_iter--;
+			auto sprites = TextureLoader::get_sprites();
+			(*sprites)[1].texture = image_iter->second;
+		}
+	};
+	auto right_arrow_func = []{
+		auto textures = TextureLoader::get_textures();
+		if (std::next(image_iter) != textures.end()){
+			image_iter++;
+			auto sprites = TextureLoader::get_sprites();
+			(*sprites)[1].texture = image_iter->second;
+		}
+	};
+
+	std::vector<SpriteAsset> assets = {
+		{ "DockFrame", dockPosition, nullptr, nullptr, { dock_width, dock_height }, nullptr },
+		{ "Image", image_position, nullptr, _textures["abaddon"], { image_width, image_height }, nullptr },
+		{ "LeftArrow", left_pos, nullptr, nullptr, { arrow_width, arrow_height }, left_arrow_func },
+		{ "RightArrow", right_pos, nullptr, nullptr, { arrow_width, arrow_height }, right_arrow_func }
 	};
 	for (auto asset : assets){
 		LPD3DXSPRITE sprite;
@@ -79,8 +99,14 @@ bool TextureLoader::create_sprites(IDirect3DDevice9** device){
 			std::string error_message;
 			goto on_sprite_error;
 		}
-		auto tex = _textures.find(asset.first);
-		_sprites.push_back({ asset.first, asset.second, sprite, tex!=_textures.end()? tex->second:nullptr});
+		if (!asset.texture){
+			auto tex = _textures.find(asset.name);
+			if (tex != _textures.end()){
+				asset.texture = tex->second;
+			}
+		}
+		asset.sprite = sprite;
+		_sprites.push_back(asset);
 	}
 	return true;
 
@@ -89,8 +115,8 @@ on_sprite_error:
 	return false;
 }
 
-std::vector<SpriteAsset> TextureLoader::get_sprites(){
-	return _sprites;
+std::vector<SpriteAsset>* TextureLoader::get_sprites(){
+	return &_sprites;
 }
 //
 ////A pre-formatted string showing the current frames per second

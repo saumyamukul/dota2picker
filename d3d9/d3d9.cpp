@@ -5,34 +5,10 @@
 #include <fstream>
 #include <string>
 #include "texture_loader.h"
+#include "utils.h"
+
 HMODULE g_module = NULL;
-bool mouse_down = false;
 HWND g_handle;
-ID3DXFont *m_font;
-std::string box_id;
-const char *text = "TEST2";
-const char* click = "Detected Click";
-const char* not_click = "Not Click";
-const char* inside = "Inside";
-LPD3DXSPRITE frames[10];
-LPD3DXSPRITE sprite[10];
-LPD3DXSPRITE dockSprite;
-LPD3DXSPRITE displayed_hero_sprite;
-LPD3DXSPRITE left_arrow_sprite;
-LPD3DXSPRITE right_arrow_sprite;
-
-
-float side_margin = 0.0f;
-float window_width;
-float window_height;
-struct sVertex
-{
-	float x, y, z;
-	float u, v;
-	D3DCOLOR color;
-	float nx, ny, nz;
-};
-
 
 IDirect3D9 *WINAPI Direct3DCreate9(UINT SDKVersion)
 {
@@ -51,13 +27,12 @@ bool WINAPI DllMain(HMODULE hModule, DWORD fdwReason, LPVOID lpReserved) {
 	switch (fdwReason)
 	{
 	case DLL_PROCESS_ATTACH:
-	{
-							   if (!g_module)LoadOriginalDll();
+		if (!g_module){
+			LoadOriginalDll();
+		}
+		orig_Direct3DCreate9 = (D3DC9)GetProcAddress(g_module, "Direct3DCreate9");
+		break;
 
-							   //myfile << "Writing this to a file.\n";
-							   orig_Direct3DCreate9 = (D3DC9)GetProcAddress(g_module, "Direct3DCreate9");
-							   break;
-	}
 	case DLL_PROCESS_DETACH:
 		FreeLibrary(g_module);
 		break;
@@ -71,7 +46,6 @@ Augmented Callbacks
 
 int WINAPI D3DPERF_BeginEvent(D3DCOLOR col, LPCWSTR wszName)
 {
-
 	if (!g_module) LoadOriginalDll(); // looking for the "right d3d9.dll"
 
 	typedef int (WINAPI* D3DPERF_BE)(D3DCOLOR, LPCWSTR);
@@ -137,74 +111,18 @@ HRESULT f_IDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParameters
 	return hr;
 }
 
-bool InsideRect(RECT rect){
-	POINT cursorPos;
-	GetCursorPos(&cursorPos);
-	if (cursorPos.x >= rect.left && cursorPos.x <= rect.right){
-		if (cursorPos.y >= rect.top && cursorPos.y <= rect.bottom){
-			return true;
-		}
-	}
-	return false;
-}
 
 HRESULT f_IDirect3DDevice9::EndScene()
 {
 	D3DCOLOR color = D3DCOLOR_ARGB(255, 255, 255, 255);
-	for (auto sprite : TextureLoader::get_sprites()){
+	for (auto sprite : *TextureLoader::get_sprites()){
 		auto d3d_sprite = sprite.sprite;
 		if (!sprite.texture) continue;
 		d3d_sprite->Begin(D3DXSPRITE_ALPHABLEND);
 		d3d_sprite->Draw(sprite.texture, NULL, NULL, &sprite.position, color);
 		d3d_sprite->End();
 	}
-
-	/*bool key_up = false; 
-	if ((GetKeyState(VK_LBUTTON) & 0x100) != 0){
-		mouse_down = true;
-	}
-	else{
-		if (mouse_down){
-			RECT left_arrow_rect;
-			SetRect(&left_arrow_rect, left_pos.x, left_pos.y, left_pos.x + arrow_width, left_pos.y + arrow_height);
-			if (InsideRect(left_arrow_rect)){
-				box_id = click;
-				if (map_iter != textures.begin()){
-					map_iter--;
-				}
-			}
-
-			RECT right_arrow_rect;
-			SetRect(&right_arrow_rect, right_pos.x, right_pos.y, right_pos.x + arrow_width, right_pos.y + arrow_height);
-			if (InsideRect(right_arrow_rect)){
-				box_id = click;
-				if (std::next(map_iter) != textures.end()){
-					map_iter++;
-				}
-			}
-		}
-		mouse_down = false;
-		box_id = not_click;
-	}*/
-		
-	//// NOTE: draw your custom D3D components here.
-
-	//RECT textRect;
-	//POINT cursorPos;
-	//GetCursorPos(&cursorPos);
-	//SetRect(&textRect, cursorPos.x, cursorPos.y, 50, 50);
-	//int font_height = m_font->DrawText(NULL,        //pSprite
-
-	//	box_id.c_str(),  //pString
-
-	//	-1,          //Count
-
-	//	&textRect,  //pRect
-
-	//	DT_LEFT | DT_NOCLIP,//Format,
-
-	//	0xFFFFFFFF); //Color
-
+	Utils::handle_input();
 	return f_pD3DDevice->EndScene();
 }
 
