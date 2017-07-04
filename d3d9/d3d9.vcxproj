@@ -71,12 +71,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -112,6 +114,11 @@
       <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>d3d9.def</ModuleDefinitionFile>
     </Link>
+    <CustomBuildStep>
+      <Command>xcopy "$(SolutionDir)\Assets" "$(SolutionDir)build\$(Platform)\$(Configuration)\Assets\" /s/h/e/k/f/c/y &amp; xcopy "$(OutputPath)$(TargetFileName)" "$(SolutionDir)build\$(Platform)\$(Configuration)\" /y</Command>
+      <Outputs>build\Assets</Outputs>
+      <Inputs>&amp;(TargetPath)</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -155,19 +162,25 @@
       <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>d3d9.def</ModuleDefinitionFile>
     </Link>
+    <CustomBuildStep>
+      <Command>xcopy "$(SolutionDir)\Assets" "$(SolutionDir)build\$(Platform)\$(Configuration)\Assets\" /s/h/e/k/f/c/y &amp; xcopy "$(OutputPath)$(TargetFileName)" "$(SolutionDir)build\$(Platform)\$(Configuration)\" /y</Command>
+      <Outputs>build\Assets</Outputs>
+      <Inputs>&amp;(TargetPath)</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="address_helpers.h" />
     <ClInclude Include="d3d9.h" />
     <ClInclude Include="error_handler.h" />
     <ClInclude Include="utils.h" />
-    <ClInclude Include="texture_loader.h" />
+    <ClInclude Include="resource_manager.h" />
     <ClInclude Include="heroes.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="address_helper.cpp" />
     <ClCompile Include="d3d9.cpp" />
     <ClCompile Include="error_handler.cpp" />
-    <ClCompile Include="texture_loader.cpp" />
+    <ClCompile Include="resource_manager.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>

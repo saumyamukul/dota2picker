@@ -4,8 +4,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "texture_loader.h"
+#include "resource_manager.h"
 #include "utils.h"
+#include "address_helpers.h"
 
 HMODULE g_module = NULL;
 HWND g_handle;
@@ -96,7 +97,7 @@ HRESULT f_iD3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
 	HRESULT hr = f_pD3D->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
 	g_handle = hFocusWindow;
 	// NOTE: initialize your custom D3D components here.
-	TextureLoader::load_textures(ppReturnedDeviceInterface);
+	ResourceManager::load_textures(ppReturnedDeviceInterface);
 	return hr;
 }
 
@@ -115,7 +116,7 @@ HRESULT f_IDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParameters
 HRESULT f_IDirect3DDevice9::EndScene()
 {
 	D3DCOLOR color = D3DCOLOR_ARGB(255, 255, 255, 255);
-	for (auto sprite : *TextureLoader::get_sprites()){
+	for (auto sprite : *ResourceManager::get_sprites()){
 		auto d3d_sprite = sprite.sprite;
 		if (!sprite.texture) continue;
 		d3d_sprite->Begin(D3DXSPRITE_ALPHABLEND);
@@ -123,6 +124,7 @@ HRESULT f_IDirect3DDevice9::EndScene()
 		d3d_sprite->End();
 	}
 	Utils::handle_input();
+	AddressHelper::get_selected_heroes();
 	return f_pD3DDevice->EndScene();
 }
 
