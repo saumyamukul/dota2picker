@@ -112,9 +112,17 @@ HRESULT f_IDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParameters
 	return hr;
 }
 
-
+extern std::vector<int> current_selections;
+int count = 0;
 HRESULT f_IDirect3DDevice9::EndScene()
 {
+	count++;
+	if (count >= 180){
+		current_selections = AddressHelper::get_recommended_hero_list();
+		count = 0;
+	}
+	Utils::handle_input();
+
 	D3DCOLOR color = D3DCOLOR_ARGB(255, 255, 255, 255);
 	for (auto sprite : *ResourceManager::get_sprites()){
 		auto d3d_sprite = sprite.sprite;
@@ -123,8 +131,7 @@ HRESULT f_IDirect3DDevice9::EndScene()
 		d3d_sprite->Draw(sprite.texture, NULL, NULL, &sprite.position, color);
 		d3d_sprite->End();
 	}
-	Utils::handle_input();
-	AddressHelper::get_selected_heroes();
+
 	return f_pD3DDevice->EndScene();
 }
 

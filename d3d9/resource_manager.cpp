@@ -14,15 +14,18 @@ int arrow_height = 16;
 int dock_width = 200;
 int dock_height = 1024;
 
+int current_hero_id = 0;
+int vec_index = 0;
 std::map<std::string, LPDIRECT3DTEXTURE9> ResourceManager::_textures;
 std::vector<SpriteAsset> ResourceManager::_sprites;
 std::map<std::string, LPDIRECT3DTEXTURE9>::iterator image_iter;
+std::vector<int> current_selections;
 bool ResourceManager::load_textures(IDirect3DDevice9** device){
 	std::string error_message;
 
 	{
 		// Load hero textures
-		for (auto hero : heroes){
+		for (auto hero : get_heroes()){
 			std::string file_path = "C:/Users/saumyamukul/Documents/Visual Studio 2013/Projects/DotaDLL/d3d9/Assets/Heroes/" + hero.second + ".png";
 			LPDIRECT3DTEXTURE9 tex;
 			if (!SUCCEEDED(D3DXCreateTextureFromFileEx(*device, file_path.c_str(), image_width, image_height, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &tex))){
@@ -81,7 +84,7 @@ bool ResourceManager::create_sprites(IDirect3DDevice9** device){
 
 	auto arrow_offsets_from_center = 20.0f;
 
-	D3DXVECTOR3 left_arrow_pos = image_position + D3DXVECTOR3(-arrow_offsets_from_center - arrow_width / 2.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 left_arrow_pos = arrow_center_position + D3DXVECTOR3(-arrow_offsets_from_center - arrow_width / 2.0f, 0.0f, 0.0f);
 	D3DXVECTOR3 right_arrow_pos = arrow_center_position + D3DXVECTOR3(arrow_offsets_from_center - arrow_width / 2.0f, 0.0f, 0.0f);
 
 	image_iter = _textures.begin();
@@ -89,18 +92,22 @@ bool ResourceManager::create_sprites(IDirect3DDevice9** device){
 
 	auto left_arrow_func = []{
 		auto textures = ResourceManager::get_textures();
-		if (image_iter != textures.begin()){
-			image_iter--;
+		if (vec_index && !current_selections.empty()){
+			--vec_index;
+			auto hero_id = current_selections[vec_index];
+			auto hero_name = get_heroes()[hero_id];
 			auto sprites = ResourceManager::get_sprites();
-			(*sprites)[1].texture = image_iter->second;
+			(*sprites)[1].texture = textures[hero_name];
 		}
 	};
 	auto right_arrow_func = []{
 		auto textures = ResourceManager::get_textures();
-		if (std::next(image_iter) != textures.end()){
-			image_iter++;
+		if (vec_index != textures.size() && !current_selections.empty()){
+			++vec_index;
+			auto hero_id = current_selections[vec_index];
+			auto hero_name = get_heroes()[hero_id];
 			auto sprites = ResourceManager::get_sprites();
-			(*sprites)[1].texture = image_iter->second;
+			(*sprites)[1].texture = textures[hero_name];
 		}
 	};
 
