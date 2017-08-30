@@ -20,12 +20,14 @@
 static char errorBuffer[CURL_ERROR_SIZE];
 static std::string buffer;
 
-UINT_PTR base_offset = 0x2680010;
+UINT_PTR base_offset = 0x269EE60;
 #define OFFSET_1  0x3B0
 #define OFFSET_2  0x14
 #define INTER_HERO_OFFSET  0xd8
 
-UINT_PTR radiant_gold_base_offset = 0x2735500;
+UINT_PTR radiant_gold_base_offset = 0x2755010;
+UINT_PTR dire_gold_base_offset = 0x2754F58;
+
 #define RADIANT_GOLD_OFFSET_1  0x398
 #define RADIANT_GOLD_OFFSET_2  0x18
 
@@ -75,13 +77,45 @@ namespace
 		return ::FindWindowEx(0, 0, 0, "Dota 2");
 	}
 
-	bool is_radiant(){
+	bool pick_screen_ready(){
 		HWND window_hnd = get_window();
 		PVOID pid = get_process(window_hnd);
 		UINT_PTR base_addr = get_process_base_address(pid);
 		UINT_PTR radiant_gold_base_addr = base_addr + radiant_gold_base_offset;
 		UINT_PTR ptr_1 = 123;
+		ReadProcessMemory(pid, (void*)radiant_gold_base_addr, &ptr_1, sizeof(ptr_1), 0);
+
+		if (ptr_1){
+			UINT_PTR address_2 = ptr_1 + RADIANT_GOLD_OFFSET_1;
+			UINT_PTR ptr_2;
+			ReadProcessMemory(pid, (void*)address_2, &ptr_2, sizeof(ptr_2), 0);
+			if (ptr_2){
+				return true;
+			}
+		}
+
+		UINT_PTR dire_gold_base_addr = base_addr + dire_gold_base_offset;
+		UINT_PTR ptr_3 = 123;
+		ReadProcessMemory(pid, (void*)dire_gold_base_addr, &ptr_3, sizeof(ptr_3), 0);
+
+		if (ptr_3){
+			UINT_PTR dire_gold_offset_address = ptr_3 + RADIANT_GOLD_OFFSET_1;
+			UINT_PTR ptr_4;
+			ReadProcessMemory(pid, (void*)dire_gold_offset_address, &ptr_4, sizeof(ptr_4), 0);
+			if (ptr_4){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool is_radiant(){
+		HWND window_hnd = get_window();
+		PVOID pid = get_process(window_hnd);
+		UINT_PTR base_addr = get_process_base_address(pid);
+		UINT_PTR radiant_gold_base_addr = base_addr + radiant_gold_base_offset;
 		auto error1 = GetLastError();
+		UINT_PTR ptr_1 = 123;
 		auto return_value = ReadProcessMemory(pid, (void*)radiant_gold_base_addr, &ptr_1, sizeof(ptr_1), 0);
 		auto error = GetLastError();
 		return ptr_1;
@@ -159,7 +193,7 @@ namespace
 		return size * nmemb;
 	}
 
-	bool init(CURL *&conn, char *url)
+	bool init(CURL *&conn, const char *url)
 	{
 		CURLcode code;
 
@@ -206,6 +240,9 @@ namespace
 	bool inited = false;
 	std::map<float, int>  get_hero_win_rates(std::vector<int> enemy_heroes){
 		std::map<float, int> sorted_map;
+		if (enemy_heroes.empty()){
+			return sorted_map;
+		}
 		std::unordered_map<int, float> edge_map;
 
 		CURL *conn = NULL;
@@ -218,8 +255,15 @@ namespace
 			inited = true;
 		}
 		//// Initialize CURL connection
-		char* url = "https://dotaedge.com/counters/1,69,59,67,64?minMmr=1000&maxMmr=9999&timespan=last_month";
-		if (!init(conn, url)) {
+		std::string ids_string;
+		for (auto enemy_id : enemy_heroes){
+			if (!ids_string.empty()){
+				ids_string += ",";
+			}
+			ids_string += std::to_string(enemy_id);
+		}
+		auto url = std::string("https://dotaedge.com/counters/") + ids_string + std::string("?minMmr=1000&maxMmr=9999&timespan=last_month");
+		if (!init(conn, url.c_str())) {
 			fprintf(stderr, "Connection initializion failed\n");
 			exit(EXIT_FAILURE);
 		}
@@ -242,7 +286,7 @@ namespace
 		rapidjson::Value& s = d["enemies"];
 		auto type = s.GetType();
 		assert(s.IsArray());
-		for (rapidjson::SizeType i = 0; i < 5; i++) {// Uses SizeType instead of size_t
+		for (rapidjson::SizeType i = 0; i < enemy_heroes.size(); i++) {// Uses SizeType instead of size_t
 			auto enemy = s[i].GetObject();
 			auto enemyID = enemy["enemy"].GetInt();
 			auto counters = enemy["counters"].GetArray();
@@ -251,10 +295,10 @@ namespace
 				auto counterID = counter["id"].GetInt();
 				auto edge = counter["edge"].GetFloat();
 				if (edge_map.find(counterID) != edge_map.end()){
-					edge_map[counterID] += edge;
+					edge_map[counterID] += edge *100.0f/enemy_heroes.size();
 				}
 				else{
-					edge_map[counterID] = edge;
+					edge_map[counterID] = edge*100.0f / enemy_heroes.size();
 				}
 				auto matchup = counter["matchup"].GetString();
 			}
@@ -269,6 +313,7 @@ namespace
 }
 
 std::vector<int> AddressHelper::get_enemy_heroes(){
+	if (!pick_screen_ready()) return{};
 	HWND window_hnd = get_window();
 	PVOID pid = get_process(window_hnd);
 	UINT_PTR base_addr = get_process_base_address(pid);
@@ -286,8 +331,8 @@ std::vector<int> AddressHelper::get_enemy_heroes(){
 
 	std::vector<int> heroes(5);
 	int errors[10];
-	int start_index = is_radiant() ? 0 : 5;
-	int end_index = is_radiant() ? 5 : 10;
+	int start_index = is_radiant() ? 5 : 2;
+	int end_index = is_radiant() ? 10 : 7;
 	int vec_index = 0;
 
 	for (int i = start_index; i < end_index; ++i){
@@ -295,16 +340,24 @@ std::vector<int> AddressHelper::get_enemy_heroes(){
 		errors[i] = ReadProcessMemory(pid, (void*)address_3, &heroes[vec_index], sizeof(heroes[vec_index]), 0);
 		++vec_index;
 	}
-	return heroes;
+
+	std::vector<int> enemies;
+	// Remove invalid ids
+	for (auto enemy : heroes){
+		if (enemy > 0 && enemy < 120){
+			enemies.push_back(enemy);
+		}
+	}
+	return enemies;
 }
 
-std::vector<int> AddressHelper::get_recommended_hero_list(){
+std::vector<std::pair<int,float>> AddressHelper::get_recommended_hero_list(){
 	auto enemy_heroes = get_enemy_heroes();
 	if (enemy_heroes.empty()) return{};
 	auto rates = get_hero_win_rates(enemy_heroes);
-	std::vector<int> heroes;
-	for (auto hero : heroes){
-		heroes.push_back(0);
+	std::vector<std::pair<int,float>> heroes;
+	for (auto iterator = rates.rbegin(); iterator != rates.rend(); ++iterator){
+		heroes.push_back({ iterator->second, iterator->first });
 	}
 	return heroes;
 }

@@ -3,6 +3,8 @@
 #include "resource_manager.h"
 
 bool mouse_down = false;
+bool f1_down = false;
+bool ui_enabled = true;
 namespace{
 
 	HWND get_window(){
@@ -42,4 +44,14 @@ void Utils::handle_input(){
 		}
 		mouse_down = false;
 	}
+
+	// Enabling/disabling UI
+	if ((GetKeyState(VK_F1) & 0x100) != 0){
+		f1_down = true;
+	}
+	else if (f1_down){
+		f1_down = false;
+		ui_enabled = !ui_enabled;
+	}
+
 }
