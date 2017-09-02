@@ -5,8 +5,9 @@
 #include <fstream>
 #include <string>
 #include "resource_manager.h"
-#include "utils.h"
+#include "input_handler.h"
 #include "address_helpers.h"
+#include "hud.h"
 
 HMODULE g_module = NULL;
 HWND g_handle;
@@ -97,7 +98,7 @@ HRESULT f_iD3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
 	HRESULT hr = f_pD3D->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
 	g_handle = hFocusWindow;
 	// NOTE: initialize your custom D3D components here.
-	ResourceManager::load_textures(ppReturnedDeviceInterface);
+	HUD::get_instance()->initialize(ppReturnedDeviceInterface);
 	return hr;
 }
 
@@ -117,28 +118,7 @@ int count = 0;
 extern bool ui_enabled;
 HRESULT f_IDirect3DDevice9::EndScene()
 {
-
-	Utils::handle_input();
-	if (ui_enabled){
-		count++;
-		if (count >= 180){
-			current_selections = AddressHelper::get_recommended_hero_list();
-			count = 0;
-		}
-
-		D3DCOLOR color = D3DCOLOR_ARGB(255, 255, 255, 255);
-		for (auto sprite : *ResourceManager::get_sprites()){
-			auto d3d_sprite = sprite.sprite;
-			if (!sprite.texture) continue;
-			d3d_sprite->Begin(D3DXSPRITE_ALPHABLEND);
-			d3d_sprite->Draw(sprite.texture, NULL, NULL, &sprite.position, color);
-			d3d_sprite->End();
-		}
-		auto font = ResourceManager::_font;
-		for (auto font_asset : *ResourceManager::get_font_assets()){
-			font->DrawText(NULL, font_asset.text.c_str(), -1, &font_asset.font_rect, DT_CENTER | DT_NOCLIP, font_asset.color);
-		}
-	}
+	HUD::get_instance()->update();
 	return f_pD3DDevice->EndScene();
 }
 

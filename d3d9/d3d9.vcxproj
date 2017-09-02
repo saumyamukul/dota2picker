@@ -171,18 +171,20 @@
   <ItemGroup>
     <ClInclude Include="address_helpers.h" />
     <ClInclude Include="d3d9.h" />
-    <ClInclude Include="error_handler.h" />
-    <ClInclude Include="utils.h" />
+    <ClInclude Include="hud.h" />
+    <ClInclude Include="asset_definitions.h" />
+    <ClInclude Include="resources.h" />
+    <ClInclude Include="input_handler.h" />
     <ClInclude Include="resource_manager.h" />
     <ClInclude Include="heroes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="address_helper.cpp" />
     <ClCompile Include="d3d9.cpp" />
-    <ClCompile Include="error_handler.cpp" />
     <ClCompile Include="heroes.cpp" />
+    <ClCompile Include="hud.cpp" />
     <ClCompile Include="resource_manager.cpp" />
-    <ClCompile Include="utils.cpp" />
+    <ClCompile Include="input_handler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="d3d9.def" />

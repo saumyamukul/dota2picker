@@ -4,7 +4,7 @@
 #include "Psapi.h"
 #include <vector>
 #include <iostream>
-#include "utils.h"
+#include "input_handler.h"
 #include <map>
 #include <unordered_map>
 #include <string>
@@ -118,7 +118,7 @@ namespace
 		UINT_PTR ptr_1 = 123;
 		auto return_value = ReadProcessMemory(pid, (void*)radiant_gold_base_addr, &ptr_1, sizeof(ptr_1), 0);
 		auto error = GetLastError();
-		return ptr_1;
+		return ptr_1!=NULL;
 	}
 
 	//std::map<float, int>  get_hero_win_rates(std::vector<int> enemy_heroes){

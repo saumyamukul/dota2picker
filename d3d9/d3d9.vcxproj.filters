@@ -24,24 +24,24 @@
     <ClInclude Include="heroes.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="error_handler.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource_manager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hud.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="asset_definitions.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resources.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="input_handler.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3d9.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="error_handler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="resource_manager.cpp">
@@ -51,6 +51,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="heroes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hud.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="input_handler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
