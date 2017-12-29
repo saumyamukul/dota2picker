@@ -1,0 +1,13 @@
+﻿  address_helper.cpp
+c:\users\saumyamukul\documents\visual studio 2013\projects\dotadll\d3d9\Includes/libxml/HTMLparser.h(15): fatal error C1083: Cannot open include file: 'libxml/xmlversion.h': No such file or directory
+  d3d9.cpp
+c:\users\saumyamukul\documents\visual studio 2013\projects\dotadll\d3d9\resources.h(63): warning C4244: 'argument' : conversion from 'FLOAT' to 'int', possible loss of data
+  heroes.cpp
+  hud.cpp
+c:\users\saumyamukul\documents\visual studio 2013\projects\dotadll\d3d9\resources.h(63): warning C4244: 'argument' : conversion from 'FLOAT' to 'int', possible loss of data
+  resource_manager.cpp
+c:\users\saumyamukul\documents\visual studio 2013\projects\dotadll\d3d9\resources.h(63): warning C4244: 'argument' : conversion from 'FLOAT' to 'int', possible loss of data
+resource_manager.cpp(59): warning C4244: 'argument' : conversion from 'float' to 'UINT', possible loss of data
+  input_handler.cpp
+c:\users\saumyamukul\documents\visual studio 2013\projects\dotadll\d3d9\resources.h(63): warning C4244: 'argument' : conversion from 'FLOAT' to 'int', possible loss of data
+input_handler.cpp(19): warning C4244: 'argument' : conversion from 'FLOAT' to 'int', possible loss of data
