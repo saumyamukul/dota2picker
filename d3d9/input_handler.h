@@ -13,6 +13,7 @@ public:
 	RECT get_window_rect();
 	void handle_input();
 	void on_ui_state_changed(std::function<void()> callback){ _ui_state_change_callback = callback; }
+	void set_recommended_heroes(std::vector<std::pair<int, float>> heroes){ _recommended_heroes = heroes; }
 private:
 	void _on_sprite_clicked(const std::string& name);
 	bool _is_cursor_inside_rect(RECT rect);

@@ -6,7 +6,16 @@
 #define CONSOLETEST_API __declspec(dllimport)
 #endif
 typedef IDirect3D9 *(WINAPI *D3DC9)(UINT);
+typedef int (WINAPI *D3DPERF_BE)(D3DCOLOR, LPCWSTR);
+typedef int (WINAPI *D3DPERF_EE)(void);
+typedef void (WINAPI *D3DPERF_SM)(D3DCOLOR, LPCWSTR);
+typedef DWORD (WINAPI *D3DPERF_GS)();
+
 D3DC9 orig_Direct3DCreate9;
+D3DPERF_BE orig_BeginEvent;
+D3DPERF_EE orig_EndEvent;
+D3DPERF_SM orig_SetMarker;
+D3DPERF_GS orig_GetStatus;
 
 /*************************
 D3D Wrapper Class
@@ -49,7 +58,6 @@ class f_IDirect3DDevice9 : public IDirect3DDevice9
 {
 private:
 	LPDIRECT3DDEVICE9 f_pD3DDevice;
-	//ID3DXFont *pFont;
 
 public:
 	f_IDirect3DDevice9(LPDIRECT3DDEVICE9 pDevice, LPDIRECT3DDEVICE9 **ppDevice);

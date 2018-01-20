@@ -25,7 +25,7 @@ void InputHandler::handle_input(){
 	}
 
 	// Enabling/disabling UI
-	if ((GetKeyState(VK_F1) & 0x100) != 0){
+	if ((GetKeyState(VK_F10) & 0x100) != 0){
 		_f1_down = true;
 	}
 	else if (_f1_down){

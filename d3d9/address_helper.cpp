@@ -20,13 +20,13 @@
 static char errorBuffer[CURL_ERROR_SIZE];
 static std::string buffer;
 
-UINT_PTR base_offset = 0x269EE60;
-#define OFFSET_1  0x3B0
-#define OFFSET_2  0x14
-#define INTER_HERO_OFFSET  0xd8
+UINT_PTR hero_ids_base_offset = 0x2886930;
+#define HERO_ID_OFFSET_1  0x3B0
+#define HERO_ID_OFFSET_2  0x14
+#define INTER_HERO_OFFSET  0x118
 
-UINT_PTR radiant_gold_base_offset = 0x2755010;
-UINT_PTR dire_gold_base_offset = 0x2754F58;
+UINT_PTR radiant_gold_base_offset = 0x293B210;
+UINT_PTR dire_gold_base_offset = 0x293B218;
 
 #define RADIANT_GOLD_OFFSET_1  0x398
 #define RADIANT_GOLD_OFFSET_2  0x18
@@ -34,24 +34,22 @@ UINT_PTR dire_gold_base_offset = 0x2754F58;
 extern std::ofstream myfile;
 namespace
 {
-	HMODULE get_module(PVOID hProcess)
+	HMODULE get_module(HANDLE process_handle, std::string module_name)
 	{
 		HMODULE h_mods[1024];
-		HANDLE handle = hProcess;
 		DWORD cb_needed;
 		unsigned int i;
 
-		if (EnumProcessModules(handle, h_mods, sizeof(h_mods), &cb_needed))
+		if (EnumProcessModules(process_handle, h_mods, sizeof(h_mods), &cb_needed))
 		{
 			for (i = 0; i < (cb_needed / sizeof(HMODULE)); i++)
 			{
 				TCHAR sz_mod_name[MAX_PATH];
-				if (GetModuleFileNameEx(handle, h_mods[i], sz_mod_name, sizeof(sz_mod_name) / sizeof(TCHAR)))
+				auto buffer_size = sizeof(sz_mod_name) / sizeof(TCHAR);
+				if (GetModuleFileNameEx(process_handle, h_mods[i], sz_mod_name, buffer_size))
 				{
 					std::string str_mod_name = sz_mod_name;
-					//you will need to change this to the name of the exe of the foreign process
-					std::string str_mod_contain = "client.dll";
-					if (str_mod_name.find(str_mod_contain) != std::string::npos)
+					if (str_mod_name.find(module_name) != std::string::npos)
 					{
 						return h_mods[i];
 					}
@@ -61,126 +59,27 @@ namespace
 		return nullptr;
 	}
 
-	PVOID get_process(HWND WindowHND){
-		DWORD pid;
-		GetWindowThreadProcessId(WindowHND, &pid);
-		PVOID handle =  OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, 0, pid);
-		return handle;
-	}
-
-	UINT_PTR get_process_base_address(PVOID ProcessID){
-		HMODULE module = get_module(ProcessID);
+	UINT_PTR get_module_base_address(){
+		HANDLE current_process_handle = GetCurrentProcess();
+		HMODULE module = get_module(current_process_handle, "client.dll");
 		return (UINT_PTR)module;
 	}
 
-	HWND get_window(){
-		return ::FindWindowEx(0, 0, 0, "Dota 2");
+	bool is_radiant(){
+		UINT_PTR base_addr = get_module_base_address();
+		UINT_PTR radiant_gold_base_addr = base_addr + radiant_gold_base_offset;
+		if (radiant_gold_base_addr) return true;
+	}
+
+	bool is_dire(){
+		UINT_PTR base_addr = get_module_base_address();
+		UINT_PTR dire_gold_base_addr = base_addr + dire_gold_base_offset;
+		if (dire_gold_base_addr) return true;
 	}
 
 	bool pick_screen_ready(){
-		HWND window_hnd = get_window();
-		PVOID pid = get_process(window_hnd);
-		UINT_PTR base_addr = get_process_base_address(pid);
-		UINT_PTR radiant_gold_base_addr = base_addr + radiant_gold_base_offset;
-		UINT_PTR ptr_1 = 123;
-		ReadProcessMemory(pid, (void*)radiant_gold_base_addr, &ptr_1, sizeof(ptr_1), 0);
-
-		if (ptr_1){
-			UINT_PTR address_2 = ptr_1 + RADIANT_GOLD_OFFSET_1;
-			UINT_PTR ptr_2;
-			ReadProcessMemory(pid, (void*)address_2, &ptr_2, sizeof(ptr_2), 0);
-			if (ptr_2){
-				return true;
-			}
-		}
-
-		UINT_PTR dire_gold_base_addr = base_addr + dire_gold_base_offset;
-		UINT_PTR ptr_3 = 123;
-		ReadProcessMemory(pid, (void*)dire_gold_base_addr, &ptr_3, sizeof(ptr_3), 0);
-
-		if (ptr_3){
-			UINT_PTR dire_gold_offset_address = ptr_3 + RADIANT_GOLD_OFFSET_1;
-			UINT_PTR ptr_4;
-			ReadProcessMemory(pid, (void*)dire_gold_offset_address, &ptr_4, sizeof(ptr_4), 0);
-			if (ptr_4){
-				return true;
-			}
-		}
-		return false;
+		return is_radiant() || is_dire();
 	}
-
-	bool is_radiant(){
-		HWND window_hnd = get_window();
-		PVOID pid = get_process(window_hnd);
-		UINT_PTR base_addr = get_process_base_address(pid);
-		UINT_PTR radiant_gold_base_addr = base_addr + radiant_gold_base_offset;
-		auto error1 = GetLastError();
-		UINT_PTR ptr_1 = 123;
-		auto return_value = ReadProcessMemory(pid, (void*)radiant_gold_base_addr, &ptr_1, sizeof(ptr_1), 0);
-		auto error = GetLastError();
-		return ptr_1!=NULL;
-	}
-
-	//std::map<float, int>  get_hero_win_rates(std::vector<int> enemy_heroes){
-	//	std::ifstream t("Assets/win_rates.txt");
-	//	std::string str;
-
-	//	t.seekg(0, std::ios::end);
-	//	str.reserve(t.tellg());
-	//	t.seekg(0, std::ios::beg);
-
-	//	str.assign((std::istreambuf_iterator<char>(t)),
-	//		std::istreambuf_iterator<char>());
-
-	//	const char* json = str.c_str();
-	//	rapidjson::Document d;
-	//	d.Parse(json);
-
-	//	std::unordered_map<int, float> edge_map;
-	//	rapidjson::Value& s = d["win_rates"];
-	//	auto type = s.GetType();
-	//	assert(s.IsArray());
-	//	for (rapidjson::SizeType i = 0; i < enemy_heroes.size(); i++) {// Uses SizeType instead of size_t
-	//		int enemy_index = 0;
-	//		int enemy_id = enemy_heroes[i];
-	//		for (auto enemy : get_sorted_heroes()){
-	//			if (enemy.second != enemy_id){
-	//				++enemy_index;
-	//			}
-	//		}
-	//		auto herodata = s[enemy_index].GetArray();
-	//		auto sorted_heroes = get_sorted_heroes();
-	//		auto iterator = sorted_heroes.begin();
-	//		int hero_index = 0;
-	//		auto size = herodata.Size();
-	//		for (rapidjson::SizeType j = 0; j < herodata.Size(); j++) {// Uses SizeType instead of size_t
-	//			auto hero_id = iterator->second;
-	//			++iterator;
-	//			bool hero_already_picked = false;
-	//			for (auto hero_id : enemy_heroes){
-	//				if (hero_id == hero_id){
-	//					hero_already_picked = true;
-	//					break;
-	//				}
-	//			}
-	//			if (hero_already_picked) continue;
-	//			auto counterdata = herodata[j].GetArray();
-	//			auto value = counterdata[0].GetString();
-	//			float val = std::stof(value);
-	//			if (edge_map.find(j) != edge_map.end()){
-	//				edge_map[hero_id] += val;
-	//			}
-	//			else{
-	//				edge_map[hero_id] = val;
-	//			}
-	//		}
-	//	}
-	//	std::map<float, int> sorted_map;
-	//	for (auto iterator = edge_map.begin(); iterator != edge_map.end(); ++iterator){
-	//		sorted_map.insert({ iterator->second, iterator->first });
-	//	}
-	//	return sorted_map;
-	//}
 
 	int writer(char *data, size_t size, size_t nmemb,
 		std::string *writerData)
@@ -314,30 +213,28 @@ namespace
 
 std::vector<int> AddressHelper::get_enemy_heroes(){
 	if (!pick_screen_ready()) return{};
-	HWND window_hnd = get_window();
-	PVOID pid = get_process(window_hnd);
-	UINT_PTR base_addr = get_process_base_address(pid);
 
-	UINT_PTR address_1 = base_addr + base_offset;
-	UINT_PTR ptr_1 = 0;
-	ReadProcessMemory(pid, (void*)address_1, &ptr_1, sizeof(ptr_1), 0);
-	auto error_1 = GetLastError();
-	if (!address_1) return{}; 
+	UINT_PTR base_addr = get_module_base_address();
+	UINT_PTR hero_ids_base_address = base_addr + hero_ids_base_offset;
 
-	UINT_PTR address_2 = ptr_1 + OFFSET_1;
-	UINT_PTR ptr_2;
-	ReadProcessMemory(pid, (void*)address_2, &ptr_2, sizeof(ptr_2), 0);
-	auto error_2 = GetLastError();
+	UINT_PTR level_1_ptr = *(PUINT_PTR)hero_ids_base_address;
+	if (!level_1_ptr) return{};
+
+	UINT_PTR level_2_ptr = *(PUINT_PTR)(level_1_ptr + HERO_ID_OFFSET_1);
+	if (!level_2_ptr) return{};
+
+	UINT_PTR first_hero_id_ptr = (level_2_ptr + HERO_ID_OFFSET_2);
+	if (!first_hero_id_ptr) return{};
 
 	std::vector<int> heroes(5);
 	int errors[10];
-	int start_index = is_radiant() ? 5 : 2;
-	int end_index = is_radiant() ? 10 : 7;
+	int start_index = is_radiant() ? 5 : 0;
+	int end_index = is_radiant() ? 10 : 5;
 	int vec_index = 0;
 
 	for (int i = start_index; i < end_index; ++i){
-		UINT_PTR address_3 = ptr_2 + OFFSET_2 + i*INTER_HERO_OFFSET;
-		errors[i] = ReadProcessMemory(pid, (void*)address_3, &heroes[vec_index], sizeof(heroes[vec_index]), 0);
+		UINT_PTR address_3 = first_hero_id_ptr + i*INTER_HERO_OFFSET;
+		heroes.push_back(*(PUINT)address_3);
 		++vec_index;
 	}
 

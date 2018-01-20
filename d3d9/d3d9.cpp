@@ -22,6 +22,12 @@ void LoadOriginalDll(){
 	GetSystemDirectory(path, MAX_PATH);
 	strcat(path, "\\d3d9.dll");
 	g_module = LoadLibrary(path);
+
+	orig_Direct3DCreate9 = (D3DC9)GetProcAddress(g_module, "Direct3DCreate9");
+	orig_BeginEvent = (D3DPERF_BE)GetProcAddress(g_module, "D3DPERF_BeginEvent");
+	orig_EndEvent = (D3DPERF_EE)GetProcAddress(g_module, "D3DPERF_EndEvent");
+	orig_SetMarker = (D3DPERF_SM)GetProcAddress(g_module, "D3DPERF_SetMarker");
+	orig_GetStatus = (D3DPERF_GS)GetProcAddress(g_module, "D3DPERF_GetStatus");
 }
 
 bool WINAPI DllMain(HMODULE hModule, DWORD fdwReason, LPVOID lpReserved) {
@@ -32,7 +38,6 @@ bool WINAPI DllMain(HMODULE hModule, DWORD fdwReason, LPVOID lpReserved) {
 		if (!g_module){
 			LoadOriginalDll();
 		}
-		orig_Direct3DCreate9 = (D3DC9)GetProcAddress(g_module, "Direct3DCreate9");
 		break;
 
 	case DLL_PROCESS_DETACH:
@@ -48,42 +53,22 @@ Augmented Callbacks
 
 int WINAPI D3DPERF_BeginEvent(D3DCOLOR col, LPCWSTR wszName)
 {
-	if (!g_module) LoadOriginalDll(); // looking for the "right d3d9.dll"
-
-	typedef int (WINAPI* D3DPERF_BE)(D3DCOLOR, LPCWSTR);
-	D3DPERF_BE D3DPERF_BeginEvent_fn = (D3DPERF_BE)GetProcAddress(g_module, "D3DPERF_BeginEvent");
-
-	return D3DPERF_BeginEvent_fn(col, wszName);
+	return orig_BeginEvent(col, wszName);
 }
 
 int WINAPI D3DPERF_EndEvent()
 {
-	if (!g_module) LoadOriginalDll(); // looking for the "right d3d9.dll"
-
-	typedef int (WINAPI* D3DPERF_EE)(void);
-	D3DPERF_EE D3DPERF_EndEvent_fn = (D3DPERF_EE)GetProcAddress(g_module, "D3DPERF_EndEvent");
-
-	return D3DPERF_EndEvent_fn();
+	return orig_EndEvent();
 }
 
 void WINAPI D3DPERF_SetMarker(D3DCOLOR col, LPCWSTR wszName)
 {
-	if (!g_module) LoadOriginalDll(); // looking for the "right d3d9.dll"
-
-	typedef void (WINAPI* D3DPERF_SM)(D3DCOLOR, LPCWSTR);
-	D3DPERF_SM D3DPERF_SetMarker_fn = (D3DPERF_SM)GetProcAddress(g_module, "D3DPERF_SetMarker");
-
-	D3DPERF_SetMarker_fn(col, wszName);
+	orig_SetMarker(col, wszName);
 }
 
 DWORD WINAPI D3DPERF_GetStatus()
 {
-	if (!g_module) LoadOriginalDll(); // looking for the "right d3d9.dll"
-
-	typedef DWORD(WINAPI* D3DPERF_GS)();
-	D3DPERF_GS D3DPERF_GetStatus_fn = (D3DPERF_GS)GetProcAddress(g_module, "D3DPERF_GetStatus");
-
-	return D3DPERF_GetStatus_fn();
+	return orig_GetStatus();
 }
 
 HRESULT f_iD3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
@@ -92,7 +77,6 @@ HRESULT f_iD3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
 	IDirect3DDevice9 **ppReturnedDeviceInterface)
 {
 	LPDIRECT3DDEVICE9 *temp = ppReturnedDeviceInterface;
-
 	*temp = new f_IDirect3DDevice9(*ppReturnedDeviceInterface, &ppReturnedDeviceInterface);
 	*ppReturnedDeviceInterface = *temp;
 	HRESULT hr = f_pD3D->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
@@ -113,11 +97,15 @@ HRESULT f_IDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParameters
 	return hr;
 }
 
-extern std::vector<std::pair<int,float>> current_selections;
 int count = 0;
 extern bool ui_enabled;
 HRESULT f_IDirect3DDevice9::EndScene()
 {
+	++count;
+	if (count >= 180){
+		InputHandler::get_instance()->set_recommended_heroes(AddressHelper::get_recommended_hero_list());
+		count = 0;
+	}
 	HUD::get_instance()->update();
 	return f_pD3DDevice->EndScene();
 }
