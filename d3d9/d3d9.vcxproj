@@ -18,6 +18,28 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\address_helper.cpp" />
+    <ClCompile Include="src\d3d9.cpp" />
+    <ClCompile Include="src\heroes.cpp" />
+    <ClCompile Include="src\hud.cpp" />
+    <ClCompile Include="src\input_handler.cpp" />
+    <ClCompile Include="src\resource_manager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\address_helpers.h" />
+    <ClInclude Include="src\asset_definitions.h" />
+    <ClInclude Include="src\d3d9.h" />
+    <ClInclude Include="src\font_asset.h" />
+    <ClInclude Include="src\heroes.h" />
+    <ClInclude Include="src\hud.h" />
+    <ClInclude Include="src\input_handler.h" />
+    <ClInclude Include="src\resources.h" />
+    <ClInclude Include="src\resource_manager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\d3d9.def" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0FEF88BC-B063-4376-9C5B-4FA2398C93F8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -71,14 +93,16 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\Temp\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir />
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -105,17 +129,19 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;D3D9_EXPORTS;%(PreprocessorDefinitions);CURL_STATICLIB</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Includes\;$(SolutionDir)Includes\iconv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)External Dependencies\Includes;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;%(AdditionalDependencies);libcurl_a_debug.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x64\;$(SolutionDir)\Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>d3d9.def</ModuleDefinitionFile>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x64\;$(SolutionDir)\External Dependencies\Libraries\;$(SolutionDir)\External Dependencies\Libraries\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>src/d3d9.def</ModuleDefinitionFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <CustomBuildStep>
-      <Command>xcopy "$(SolutionDir)\Assets" "$(SolutionDir)build\$(Platform)\$(Configuration)\Assets\" /s/h/e/k/f/c/y &amp; xcopy "$(OutputPath)$(TargetFileName)" "$(SolutionDir)build\$(Platform)\$(Configuration)\" /y</Command>
+      <Command>
+      </Command>
       <Outputs>build\Assets</Outputs>
       <Inputs>&amp;(TargetPath)</Inputs>
     </CustomBuildStep>
@@ -151,7 +177,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;D3D9_EXPORTS;%(PreprocessorDefinitions);CURL_STATICLIB</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)Includes\;$(SolutionDir)Includes\iconv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)External Dependencies\Includes;$(SolutionDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -159,36 +185,16 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>d3dx9.lib;%(AdditionalDependencies);libcurl_a.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x64\;$(SolutionDir)\Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>d3d9.def</ModuleDefinitionFile>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x64\;$(SolutionDir)\External Dependencies\Libraries;$(SolutionDir)\External Dependencies\Libraries\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>src/d3d9.def</ModuleDefinitionFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <CustomBuildStep>
-      <Command>xcopy "$(SolutionDir)\Assets" "$(SolutionDir)build\$(Platform)\$(Configuration)\Assets\" /s/h/e/k/f/c/y &amp; xcopy "$(OutputPath)$(TargetFileName)" "$(SolutionDir)build\$(Platform)\$(Configuration)\" /y</Command>
+      <Command>xcopy "$(SolutionDir)\Assets" "$(SolutionDir)build\$(Platform)\$(Configuration)\Assets\" /s/h/e/k/f/c/y &amp; xcopy "$(OutputPath)$(TargetFileName)" "$(SolutionDir)\build\$(Platform)\$(Configuration)\" /y</Command>
       <Outputs>build\Assets</Outputs>
       <Inputs>&amp;(TargetPath)</Inputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="address_helpers.h" />
-    <ClInclude Include="d3d9.h" />
-    <ClInclude Include="hud.h" />
-    <ClInclude Include="asset_definitions.h" />
-    <ClInclude Include="resources.h" />
-    <ClInclude Include="input_handler.h" />
-    <ClInclude Include="resource_manager.h" />
-    <ClInclude Include="heroes.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="address_helper.cpp" />
-    <ClCompile Include="d3d9.cpp" />
-    <ClCompile Include="heroes.cpp" />
-    <ClCompile Include="hud.cpp" />
-    <ClCompile Include="resource_manager.cpp" />
-    <ClCompile Include="input_handler.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="d3d9.def" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

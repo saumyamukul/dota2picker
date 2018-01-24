@@ -1,0 +1,9 @@
+﻿  resource_manager.cpp
+  input_handler.cpp
+  hud.cpp
+  heroes.cpp
+  d3d9.cpp
+  address_helper.cpp
+  Generating Code...
+     Creating library C:\Users\saumyamukul\Documents\Visual Studio 2013\Projects\DotaDLL\d3d9\\x64\Debug\d3d9.lib and object C:\Users\saumyamukul\Documents\Visual Studio 2013\Projects\DotaDLL\d3d9\\x64\Debug\d3d9.exp
+  d3d9.vcxproj -> C:\Users\saumyamukul\Documents\Visual Studio 2013\Projects\DotaDLL\d3d9\\x64\Debug\d3d9.dll

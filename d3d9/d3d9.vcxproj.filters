@@ -15,53 +15,56 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="d3d9.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="address_helpers.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="heroes.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource_manager.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hud.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="asset_definitions.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resources.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="input_handler.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="d3d9.cpp">
+    <ClCompile Include="src\address_helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="resource_manager.cpp">
+    <ClCompile Include="src\d3d9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="address_helper.cpp">
+    <ClCompile Include="src\heroes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="heroes.cpp">
+    <ClCompile Include="src\hud.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="hud.cpp">
+    <ClCompile Include="src\input_handler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="input_handler.cpp">
+    <ClCompile Include="src\resource_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="d3d9.def">
+    <ClInclude Include="src\address_helpers.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\asset_definitions.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\d3d9.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\font_asset.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\heroes.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hud.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\input_handler.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resource_manager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resources.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\d3d9.def">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
