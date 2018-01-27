@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 #include "asset_definitions.h"
 #include "input_handler.h"
+#include <vector>
 
 class Resources{
 public:

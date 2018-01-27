@@ -1,13 +1,15 @@
 #include "d3d9.h"
-#include <fstream>
-#include <D3dx9core.h>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include "resource_manager.h"
+
+#include "data_helper.h"
 #include "input_handler.h"
-#include "address_helpers.h"
+#include "resource_manager.h"
 #include "hud.h"
+
+#include <D3dx9core.h>
+#include <fstream>
+#include <fstream>
+#include <iostream>
+#include <string>
 
 HMODULE g_module = NULL;
 HWND g_handle;
@@ -97,15 +99,9 @@ HRESULT f_IDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationParameters
 	return hr;
 }
 
-int count = 0;
 extern bool ui_enabled;
 HRESULT f_IDirect3DDevice9::EndScene()
 {
-	++count;
-	if (count >= 180){
-		InputHandler::get_instance()->set_recommended_heroes(AddressHelper::get_recommended_hero_list());
-		count = 0;
-	}
 	HUD::get_instance()->update();
 	return f_pD3DDevice->EndScene();
 }

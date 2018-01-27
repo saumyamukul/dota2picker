@@ -38,64 +38,12 @@ void InputHandler::handle_input(){
 }
 
 void InputHandler::_on_sprite_clicked(const std::string& name){
-	auto sprite_map = ResourceManager::get_instance()->get_sprite_asset_map();
-	auto texture_map = ResourceManager::get_instance()->get_texture_map();
-	auto text_asset_map = ResourceManager::get_instance()->get_text_asset_map();
-
 	if (name == "left_arrow"){
-		auto& hero_sprite = (*sprite_map)["hero_image"];
-
-		if (_recommended_heroes.empty()){
-			hero_sprite.texture = (*texture_map)["no_heroes"];
-			return;
-		}
-
-		auto& hero_edge_text = (*text_asset_map)["hero_edge"];
-
-		if (_hero_index && !_recommended_heroes.empty()){
-			--_hero_index;
-			auto hero_id = _recommended_heroes[_hero_index].first;
-			auto hero_edge = _recommended_heroes[_hero_index].second;
-			auto hero_name = get_heroes()[hero_id];
-			hero_sprite.texture = (*texture_map)[hero_name];
-			std::stringstream stream;
-			stream << std::fixed << std::setprecision(2) << hero_edge;
-			hero_edge_text.text = stream.str();
-			if (hero_edge >= 0.0f){
-				hero_edge_text.color = D3DXCOLOR(0.0f, 1.0f, 0.0f, 1.0f);
-			}
-			else{
-				hero_edge_text.color = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-			}
-		}
+		ResourceManager::get_instance()->goto_previous_hero();
 	}
 	else if (name == "right_arrow"){
-		auto& hero_sprite = (*sprite_map)["hero_image"];
-		if (_recommended_heroes.empty()){
-			hero_sprite.texture = (*texture_map)["no_heroes"];
-			return;
-		}
-
-		auto& hero_edge_text = (*text_asset_map)["hero_edge"];
-
-		if (_hero_index != get_heroes().size() && !_recommended_heroes.empty()){
-			++_hero_index;
-			auto hero_id = _recommended_heroes[_hero_index].first;
-			auto hero_edge = _recommended_heroes[_hero_index].second;
-			auto hero_name = get_heroes()[hero_id];
-			hero_sprite.texture = (*texture_map)[hero_name];
-			std::stringstream stream;
-			stream << std::fixed << std::setprecision(2) << hero_edge;
-			hero_edge_text.text = stream.str();
-			if (hero_edge >= 0.0f){
-				hero_edge_text.color = D3DXCOLOR(0.0f, 1.0f, 0.0f, 1.0f);
-			}
-			else{
-				hero_edge_text.color = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
-			}
-		}
+		ResourceManager::get_instance()->goto_next_hero();
 	}
-
 }
 
 bool InputHandler::_is_cursor_inside_rect(RECT rect){

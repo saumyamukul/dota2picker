@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\address_helper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\d3d9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -33,11 +30,11 @@
     <ClCompile Include="src\resource_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\data_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\address_helpers.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\asset_definitions.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -60,6 +57,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\resources.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\curl_helper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\data_helper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

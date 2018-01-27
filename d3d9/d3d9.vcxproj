@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\address_helper.cpp" />
+    <ClCompile Include="src\data_helper.cpp" />
     <ClCompile Include="src\d3d9.cpp" />
     <ClCompile Include="src\heroes.cpp" />
     <ClCompile Include="src\hud.cpp" />
@@ -27,8 +27,9 @@
     <ClCompile Include="src\resource_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\address_helpers.h" />
+    <ClInclude Include="src\data_helper.h" />
     <ClInclude Include="src\asset_definitions.h" />
+    <ClInclude Include="src\curl_helper.h" />
     <ClInclude Include="src\d3d9.h" />
     <ClInclude Include="src\font_asset.h" />
     <ClInclude Include="src\heroes.h" />
@@ -102,7 +103,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir />
+    <IntDir>$(SolutionDir)\Temp\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -140,8 +141,7 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <CustomBuildStep>
-      <Command>
-      </Command>
+      <Command>xcopy "$(SolutionDir)\Assets" "$(SolutionDir)build\$(Platform)\$(Configuration)\Assets\" /s/h/e/k/f/c/y &amp; xcopy "$(OutputPath)$(TargetFileName)" "$(SolutionDir)\build\$(Platform)\$(Configuration)\" /y</Command>
       <Outputs>build\Assets</Outputs>
       <Inputs>&amp;(TargetPath)</Inputs>
     </CustomBuildStep>

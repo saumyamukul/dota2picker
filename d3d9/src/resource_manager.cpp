@@ -1,16 +1,17 @@
 #include "resource_manager.h"
 
+#include "data_helper.h"
 #include "heroes.h"
-#include <D3dx9core.h>
-#include <vector>
-#include "address_helpers.h"
 #include "input_handler.h"
-#include <string>
-#include <iomanip> // setprecision
-#include <iostream>
-#include <sstream>
-#include <assert.h>
 #include "resources.h"
+
+#include <assert.h>
+#include <D3dx9core.h>
+#include <iomanip> 
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <vector>
 
 int current_hero_id = 0;
 int vec_index = 0;
@@ -22,7 +23,7 @@ void ResourceManager::initialize(IDirect3DDevice9** device){
 	while (_asset_path.back() != '\\'){
 		_asset_path.pop_back();
 	}
-	_asset_path += "Assets/"; 
+	_asset_path += "Assets/";
 	_create_textures();
 	_create_sprites();
 	_create_font();
@@ -35,7 +36,7 @@ void ResourceManager::_create_textures(){
 }
 
 void ResourceManager::_create_hero_textures(){
-	for (auto hero : get_heroes()){
+	for (auto hero : HeroData::get_heroes()){
 		std::string path = _asset_path + "Heroes/" + hero.second + ".png";
 		LPDIRECT3DTEXTURE9 hero_texture = _create_texture(path, (int)_resources.get_image_size().x, (int)_resources.get_image_size().y);
 		if (!hero_texture) continue;
@@ -98,4 +99,98 @@ void ResourceManager::_create_text_assets(){
 	for (auto asset : text_assets){
 		_text_assets.insert({ asset.name, asset });
 	}
+}
+
+void ResourceManager::update(){
+	_hero_index = 0;
+	auto recommended_heroes = get_recommended_hero_map();
+	if (recommended_heroes.empty()){
+	    reset_sprites();
+	}
+	else{
+		auto& hero_sprite = _sprites["hero_image"];
+		auto& hero_edge_text = _text_assets["hero_edge"];
+
+		auto hero_id = recommended_heroes[0].first;
+		auto hero_edge = recommended_heroes[0].second;
+		auto hero_name = HeroData::get_heroes()[hero_id];
+		hero_sprite.texture = _textures[hero_name];
+		std::stringstream stream;
+		stream << std::fixed << std::setprecision(2) << hero_edge;
+		hero_edge_text.text = stream.str();
+		if (hero_edge >= 0.0f){
+			hero_edge_text.color = D3DXCOLOR(0.0f, 1.0f, 0.0f, 1.0f);
+		}
+		else{
+			hero_edge_text.color = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+		}
+	}
+}
+
+std::vector<std::pair<int, float>> ResourceManager::get_recommended_hero_map(){
+	std::lock_guard<std::mutex> lock(_hero_map_mutex);
+	return _recommended_hero_map;
+}
+
+void ResourceManager::set_recommended_hero_map(std::vector<std::pair<int, float>> hero_map){
+	std::lock_guard<std::mutex> lock(_hero_map_mutex);
+	_recommended_hero_map = hero_map;
+}
+
+void ResourceManager::update_recommended_heroes(){
+	
+}
+
+void ResourceManager::goto_next_hero(){
+	auto recommended_heroes = get_recommended_hero_map();
+	auto& hero_sprite = _sprites["hero_image"];
+	auto& hero_edge_text = _text_assets["hero_edge"];
+
+	if (_hero_index != HeroData::get_heroes().size() && !recommended_heroes.empty()){
+		++_hero_index;
+		auto hero_id = recommended_heroes[_hero_index].first;
+		auto hero_edge = recommended_heroes[_hero_index].second;
+		auto hero_name = HeroData::get_heroes()[hero_id];
+		hero_sprite.texture = _textures[hero_name];
+		std::stringstream stream;
+		stream << std::fixed << std::setprecision(2) << hero_edge;
+		hero_edge_text.text = stream.str();
+		if (hero_edge >= 0.0f){
+			hero_edge_text.color = D3DXCOLOR(0.0f, 1.0f, 0.0f, 1.0f);
+		}
+		else{
+			hero_edge_text.color = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+		}
+	}
+}
+
+void ResourceManager::goto_previous_hero(){
+	auto recommended_heroes = get_recommended_hero_map();
+	auto& hero_sprite = _sprites["hero_image"];
+	auto& hero_edge_text = _text_assets["hero_edge"];
+
+	if (_hero_index && !recommended_heroes.empty()){
+		--_hero_index;
+		auto hero_id = recommended_heroes[_hero_index].first;
+		auto hero_edge = recommended_heroes[_hero_index].second;
+		auto hero_name = HeroData::get_heroes()[hero_id];
+		hero_sprite.texture = _textures[hero_name];
+		std::stringstream stream;
+		stream << std::fixed << std::setprecision(2) << hero_edge;
+		hero_edge_text.text = stream.str();
+		if (hero_edge >= 0.0f){
+			hero_edge_text.color = D3DXCOLOR(0.0f, 1.0f, 0.0f, 1.0f);
+		}
+		else{
+			hero_edge_text.color = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+		}
+	}
+}
+
+void ResourceManager::reset_sprites(){
+	auto& hero_sprite = _sprites["hero_image"];
+	auto& hero_edge_text = _text_assets["hero_edge"];
+	hero_sprite.texture = _textures["default_image"];
+	hero_edge_text.text = "N/A";
+	_recommended_hero_map.clear();
 }
