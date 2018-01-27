@@ -7,9 +7,9 @@
 #================
 
 # Generated files
-/d3d9/Temp
-/d3d9/build
-/d3d9/x64/
+Temp
+build
+x64/
 
 # Visual Studio
 #==============
