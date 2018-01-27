@@ -7,7 +7,8 @@
 #================
 
 # Generated files
-/temp
+/Temp
+/build
 /d3d9/x64/
 
 # Visual Studio
