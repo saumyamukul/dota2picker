@@ -69,7 +69,7 @@ namespace HeroData{
 		{ 66, "chen" },
 		{ 67, "spectre" },
 		{ 68, "ancient_apparition" },
-		{ 79, "doom_bringer" },
+		{ 69, "doom_bringer" },
 		{ 70, "ursa" },
 		{ 71, "spirit_breaker" },
 		{ 72, "gyrocopter" },

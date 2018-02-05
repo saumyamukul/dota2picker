@@ -124,6 +124,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;libcurl_a_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86\;$(SolutionDir)\External Dependencies\Libraries\x86\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>src/d3d9.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
       <Command>xcopy "$(SolutionDir)\Assets" "$(SolutionDir)build\$(Platform)\$(Configuration)\Assets\" /s/h/e/k/f/c/y &amp; xcopy "$(OutputPath)$(TargetFileName)" "$(SolutionDir)\build\$(Platform)\$(Configuration)\" /y</Command>
@@ -176,6 +177,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;libcurl_a.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86\;$(SolutionDir)\External Dependencies\Libraries\x86\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>src/d3d9.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
       <Command>xcopy "$(SolutionDir)\Assets" "$(SolutionDir)build\$(Platform)\$(Configuration)\Assets\" /s/h/e/k/f/c/y &amp; xcopy "$(OutputPath)$(TargetFileName)" "$(SolutionDir)\build\$(Platform)\$(Configuration)\" /y</Command>

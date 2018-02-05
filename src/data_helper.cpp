@@ -2,16 +2,29 @@
 
 #include "Psapi.h"
 
-UINT_PTR hero_ids_base_offset = 0x2886960;
+#if _WIN64
+UINT_PTR hero_ids_base_offset = 0x28C6F08;
 #define HERO_ID_OFFSET_1  0x3B0
 #define HERO_ID_OFFSET_2  0x14
 #define INTER_HERO_OFFSET  0x118
 
-UINT_PTR radiant_gold_base_offset = 0x293B240;
-UINT_PTR dire_gold_base_offset = 0x293B248;
+UINT_PTR radiant_gold_base_offset = 0x297C8F0;
+UINT_PTR dire_gold_base_offset = 0x297C8F8;
 
-#define RADIANT_GOLD_OFFSET_1  0x398
-#define RADIANT_GOLD_OFFSET_2  0x18
+#define GOLD_OFFSET_1  0x398
+#define GOLD_OFFSET_2  0x18
+#else
+UINT_PTR hero_ids_base_offset = 0x1CACC44;
+#define HERO_ID_OFFSET_1  0x2C0
+#define HERO_ID_OFFSET_2  0x10
+#define INTER_HERO_OFFSET  0x100
+
+UINT_PTR radiant_gold_base_offset = 0x1D38A0C;
+UINT_PTR dire_gold_base_offset = 0x1D38A10;
+
+#define GOLD_OFFSET_1  0x2B4
+#define GOLD_OFFSET_2  0x10
+#endif
 
 HMODULE DataHelper::_get_module(HANDLE process_handle, std::string module_name)
 {
@@ -27,8 +40,14 @@ HMODULE DataHelper::_get_module(HANDLE process_handle, std::string module_name)
 			DWORD buffer_size = sizeof(sz_mod_name) / sizeof(TCHAR);
 			if (GetModuleFileNameEx(process_handle, h_mods[i], sz_mod_name, buffer_size))
 			{
-				std::string str_mod_name = sz_mod_name;
-				if (str_mod_name.find(module_name) != std::string::npos)
+				std::string str_mod_name_full_path(sz_mod_name);
+				auto final_split_index = str_mod_name_full_path.find_last_of("/\\");
+				// Get name of module 
+				std::string module_name_only = str_mod_name_full_path;
+				if (final_split_index){
+					module_name_only = str_mod_name_full_path.substr(final_split_index+1);
+				}
+				if (module_name_only == module_name)
 				{
 					return h_mods[i];
 				}
