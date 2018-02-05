@@ -91,18 +91,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IntDir>$(SolutionDir)\Temp\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)\Temp\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)\Temp\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Temp\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(SolutionDir)\Temp\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)\Temp\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)\Temp\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Temp\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -111,16 +115,22 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;D3D9_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;D3D9_EXPORTS;%(PreprocessorDefinitions);CURL_STATICLIB</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)src;$(SolutionDir)External Dependencies\Includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;libcurl_a_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86\;$(SolutionDir)\External Dependencies\Libraries\x86\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <CustomBuildStep>
+      <Command>xcopy "$(SolutionDir)\Assets" "$(SolutionDir)build\$(Platform)\$(Configuration)\Assets\" /s/h/e/k/f/c/y &amp; xcopy "$(OutputPath)$(TargetFileName)" "$(SolutionDir)\build\$(Platform)\$(Configuration)\" /y</Command>
+      <Inputs>
+      </Inputs>
+      <Outputs>build\Assets</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -136,14 +146,15 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;%(AdditionalDependencies);libcurl_a_debug.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x64\;$(SolutionDir)\External Dependencies\Libraries\;$(SolutionDir)\External Dependencies\Libraries\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x64\;$(SolutionDir)\External Dependencies\Libraries\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>src/d3d9.def</ModuleDefinitionFile>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <CustomBuildStep>
       <Command>xcopy "$(SolutionDir)\Assets" "$(SolutionDir)build\$(Platform)\$(Configuration)\Assets\" /s/h/e/k/f/c/y &amp; xcopy "$(OutputPath)$(TargetFileName)" "$(SolutionDir)\build\$(Platform)\$(Configuration)\" /y</Command>
       <Outputs>build\Assets</Outputs>
-      <Inputs>&amp;(TargetPath)</Inputs>
+      <Inputs>
+      </Inputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -154,18 +165,24 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;D3D9_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;D3D9_EXPORTS;%(PreprocessorDefinitions);CURL_STATICLIB</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SolutionDir)src;$(SolutionDir)External Dependencies\Includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;libcurl_a.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86\;$(SolutionDir)\External Dependencies\Libraries\x86\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <CustomBuildStep>
+      <Command>xcopy "$(SolutionDir)\Assets" "$(SolutionDir)build\$(Platform)\$(Configuration)\Assets\" /s/h/e/k/f/c/y &amp; xcopy "$(OutputPath)$(TargetFileName)" "$(SolutionDir)\build\$(Platform)\$(Configuration)\" /y</Command>
+      <Inputs>
+      </Inputs>
+      <Outputs>_ALWAYS_RUN_</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -185,14 +202,15 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>d3dx9.lib;%(AdditionalDependencies);libcurl_a.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x64\;$(SolutionDir)\External Dependencies\Libraries;$(SolutionDir)\External Dependencies\Libraries\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x64\;$(SolutionDir)\External Dependencies\Libraries\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>src/d3d9.def</ModuleDefinitionFile>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <CustomBuildStep>
       <Command>xcopy "$(SolutionDir)\Assets" "$(SolutionDir)build\$(Platform)\$(Configuration)\Assets\" /s/h/e/k/f/c/y &amp; xcopy "$(OutputPath)$(TargetFileName)" "$(SolutionDir)\build\$(Platform)\$(Configuration)\" /y</Command>
-      <Outputs>build\Assets</Outputs>
-      <Inputs>&amp;(TargetPath)</Inputs>
+      <Outputs>_ALWAYS_RUN_</Outputs>
+      <Inputs>
+      </Inputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
