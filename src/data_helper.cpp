@@ -3,24 +3,24 @@
 #include "Psapi.h"
 
 #if _WIN64
-UINT_PTR hero_ids_base_offset = 0x28C6F08;
+UINT_PTR hero_ids_base_offset = 0x28C80D8;
 #define HERO_ID_OFFSET_1  0x3B0
 #define HERO_ID_OFFSET_2  0x14
 #define INTER_HERO_OFFSET  0x118
 
-UINT_PTR radiant_gold_base_offset = 0x297C8F0;
-UINT_PTR dire_gold_base_offset = 0x297C8F8;
+UINT_PTR radiant_gold_base_offset = 0x297DAA0;
+UINT_PTR dire_gold_base_offset = 0x297DAA8;
 
 #define GOLD_OFFSET_1  0x398
 #define GOLD_OFFSET_2  0x18
 #else
-UINT_PTR hero_ids_base_offset = 0x1CACC44;
+UINT_PTR hero_ids_base_offset = 0x1CADC34;
 #define HERO_ID_OFFSET_1  0x2C0
 #define HERO_ID_OFFSET_2  0x10
 #define INTER_HERO_OFFSET  0x100
 
-UINT_PTR radiant_gold_base_offset = 0x1D38A0C;
-UINT_PTR dire_gold_base_offset = 0x1D38A10;
+UINT_PTR radiant_gold_base_offset = 0x1D399F4;
+UINT_PTR dire_gold_base_offset = 0x1D38AF8;
 
 #define GOLD_OFFSET_1  0x2B4
 #define GOLD_OFFSET_2  0x10
